@@ -58,22 +58,7 @@ import type { OpenAPIConfig } from './OpenAPI';
 
 {{>functions/catchErrorCodes}}
 
-const getUrl = (config: OpenAPIConfig, options: ApiRequestOptions): string => {
-	const encoder = config.ENCODE_PATH || encodeURI;
-
-	const path = options.url
-		.replace('{api-version}', config.VERSION)
-		.replace(/{(.*?)}/g, (substring: string, group: string) => {
-			if (options.path?.hasOwnProperty(group)) {
-				return encoder(String(options.path[group]));
-			}
-			return substring;
-		});
-
-	const url = `${config.BASE}${path}`;
-
-	return url;
-};
+{{>functions/getUrl}}
 
 
 /**
@@ -87,7 +72,7 @@ const getUrl = (config: OpenAPIConfig, options: ApiRequestOptions): string => {
 export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions, axiosClient: AxiosInstance = axios): CancelablePromise<T> => {
 	return new CancelablePromise(async (resolve, reject, onCancel) => {
 		try {
-			const url = getUrl(config, options);
+			const url = getUrl(config, { ...options, query: undefined });
 			const formData = getFormData(options);
 			const body = getRequestBody(options);
 			const headers = await getHeaders(config, options, formData);
